@@ -457,11 +457,6 @@
         </a>
     </div>
 
-    <div class="loading-spinner" id="loadingSpinner">
-        <div class="spinner"></div>
-        <div class="loading-text">Loading...</div>
-    </div>
-
     <div class="container">
         <h1>
             <span class="small-text">よつばカイロ整体院</span><br>
@@ -870,33 +865,30 @@ ${message}`;
         // ※Google Apps ScriptのURLはご自身のものをご使用ください
         const GAS_URL = 'https://script.google.com/macros/s/AKfycbwCoOmA44deifnwIwAsO7V1Uny7svUWedyJ-57v0JEuw_keFeFiYxI2O_9-H4r8-dy6/exec';
 
-        async function fetchAvailability(date) {
-            if(!selectedMenu) return; // メニュー未選択ならロードしない
+async function fetchAvailability(date) {
+    if (!selectedMenu) return; // メニュー未選択ならロードしない
 
-            showLoading();
-            const start = new Date(date);
-            const end = new Date(date);
-            end.setDate(end.getDate() + 7);
+    const start = new Date(date);
+    const end = new Date(date);
+    end.setDate(end.getDate() + 7);
 
-            const url = `${GAS_URL}?startTime=${start.toISOString()}&endTime=${end.toISOString()}`;
+    const url = `${GAS_URL}?startTime=${start.toISOString()}&endTime=${end.toISOString()}`;
             
-            try {
-                const res = await fetch(url);
-                const data = await res.json();
+    try {
+        const res = await fetch(url);
+        const data = await res.json();
                 
-                // 営業日データ抽出
-                const businessDays = data.filter(e => e.summary === '営業日').map(e => ({
-                    start: new Date(e.startTime),
-                    end: new Date(e.endTime)
-                }));
+        // 営業日データ抽出
+        const businessDays = data.filter(e => e.summary === '営業日').map(e => ({
+            start: new Date(e.startTime),
+            end: new Date(e.endTime)
+        }));
                 
-                renderCalendar(data, businessDays);
-            } catch(e) {
-                console.error(e);
-            } finally {
-                hideLoading();
-            }
-        }
+        renderCalendar(data, businessDays);
+    } catch(e) {
+        console.error(e);
+    }
+}
 
         function renderCalendar(events, businessDays) {
             const tbody = document.querySelector('#calendar1 tbody');
@@ -1131,11 +1123,9 @@ for (let h = 10; h <= 18; h++) {
             if(placeholder) placeholder.style.display = 'none';
         }
 
-        function showLoading() { document.getElementById('loadingSpinner').style.display = 'block'; }
-        function hideLoading() { document.getElementById('loadingSpinner').style.display = 'none'; }
-
     </script>
 </body>
 </html>
+
 
 
