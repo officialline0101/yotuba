@@ -1085,17 +1085,20 @@ function initPicker(id, days) {
         count++;
     }
 
-// 時間生成（09:00〜19:00）
+// 時間生成（09:00〜19:00 を10分刻み）
 timeSel.innerHTML = '<option value="">時間</option>';
-for(let h = 9; h <= 19; h++) {
-    const t1 = ('0'+h).slice(-2) + ':00';
-    const t2 = ('0'+h).slice(-2) + ':30';
 
-    timeSel.add(new Option(t1, t1));
+for (let h = 9; h <= 19; h++) {
+    for (let m = 0; m < 60; m += 10) {
 
-    // 19:00 には :30 を作らない
-    if (h !== 19) {
-        timeSel.add(new Option(t2, t2));
+        // 19:00 以降は作らないため、19:10〜19:50 はスキップ
+        if (h === 19 && m > 0) continue;
+
+        const hh = ('0' + h).slice(-2);
+        const mm = ('0' + m).slice(-2);
+        const time = `${hh}:${mm}`;
+
+        timeSel.add(new Option(time, time));
     }
 }
 
