@@ -991,28 +991,46 @@ ${message}`;
             return 'OK';
         }
 
-        function updateCalendarHeader(date) {
-            const ths = document.querySelectorAll('#calendar-header th');
-            // ths[0]は「時間」なのでスキップ、1~7が日付
-            const wd = ['日','月','火','水','木','金','土'];
-            
-            for(let i=0; i<7; i++) {
-                const d = new Date(date);
-                d.setDate(d.getDate() + i);
-                const m = d.getMonth()+1;
-                const day = d.getDate();
-                const w = d.getDay();
-                
-                const th = ths[i+1];
-                th.innerHTML = `${m}/${day}<br>(${wd[w]})`;
-                
-                if(w===0) th.style.color = 'red';
-                else if(w===6) th.style.color = 'blue';
-                else th.style.color = '#333';
-            }
+function updateCalendarHeader(date) {
+    const ths = document.querySelectorAll('#calendar-header th');
+    // ths[0]は「時間」なのでスキップ、1~7が日付列
+    const wd = ['日','月','火','水','木','金','土'];
 
-            document.getElementById('currentMonth').textContent = `${date.getFullYear()}年${date.getMonth()+1}月`;
+    // いったんリセット
+    for (let i = 1; i < ths.length; i++) {
+        ths[i].innerHTML = '';
+        ths[i].style.color = '#333';
+    }
+
+    let d = new Date(date);
+    let col = 1; // ths[1] から詰めていく
+
+    while (col < ths.length) {
+        const w = d.getDay();
+
+        // 火曜日(w === 2)はスキップ
+        if (w === 2) {
+            d.setDate(d.getDate() + 1);
+            continue;
         }
+
+        const m = d.getMonth() + 1;
+        const day = d.getDate();
+
+        const th = ths[col];
+        th.innerHTML = `${m}/${day}<br>(${wd[w]})`;
+
+        if (w === 0) th.style.color = 'red';
+        else if (w === 6) th.style.color = 'blue';
+        else th.style.color = '#333';
+
+        col++;
+        d.setDate(d.getDate() + 1);
+    }
+
+    document.getElementById('currentMonth').textContent =
+        `${date.getFullYear()}年${date.getMonth() + 1}月`;
+}
 
         function nextmonth() { currentDate.setMonth(currentDate.getMonth()+1); currentDate.setDate(1); fetchAvailability(currentDate); }
         function previousmonth() { currentDate.setMonth(currentDate.getMonth()-1); currentDate.setDate(1); fetchAvailability(currentDate); }
@@ -1035,52 +1053,72 @@ ${message}`;
             document.getElementById('date1').scrollIntoView({behavior: 'smooth', block: 'center'});
         }
 
-        // 日時ピッカー関連（手動選択用）
-        function initPicker(id, days) {
-            const daySel = document.getElementById(id + '_day');
-            const timeSel = document.getElementById(id + '_time');
-            
-            // 日付生成
-            const d = new Date();
-            daySel.innerHTML = '<option value="">日付を選択</option>';
-            for(let i=0; i<days; i++) {
-                const val = d.getFullYear() + '-' + ('0'+(d.getMonth()+1)).slice(-2) + '-' + ('0'+d.getDate()).slice(-2);
-                const text = `${d.getMonth()+1}/${d.getDate()}(${['日','月','火','水','木','金','土'][d.getDay()]})`;
-                const opt = document.createElement('option');
-                opt.value = val;
-                opt.text = text;
-                daySel.appendChild(opt);
-                d.setDate(d.getDate()+1);
-            }
+function initPicker(id, days) {
+    const daySel = document.getElementById(id + '_day');
+    const timeSel = document.getElementById(id + '_time');
+    
+    // 日付生成（火曜日を除外）
+    const d = new Date();
+    daySel.innerHTML = '<option value="">日付を選択</option>';
+    let count = 0;
 
-            // 時間生成
-            timeSel.innerHTML = '<option value="">時間</option>';
-            for(let h=9; h<=18; h++) {
-                const t1 = ('0'+h).slice(-2) + ':00';
-                const t2 = ('0'+h).slice(-2) + ':30';
-                timeSel.add(new Option(t1, t1));
-                if(h!==18) timeSel.add(new Option(t2, t2));
-            }
-
-            // イベントリスナー
-            const updateHidden = () => {
-                const day = daySel.value;
-                const time = timeSel.value;
-                const hidden = document.getElementById(id);
-                const placeholder = document.getElementById('placeholder' + id.slice(-1));
-                
-                if(day && time) {
-                    hidden.value = `${day}T${time}`;
-                    if(placeholder) placeholder.style.display = 'none';
-                } else {
-                    hidden.value = '';
-                }
-                updateDisplayInfo();
-            };
-
-            daySel.addEventListener('change', updateHidden);
-            timeSel.addEventListener('change', updateHidden);
+    while (count < days) {
+        // 火曜日(d.getDay() === 2) はスキップ
+        if (d.getDay() === 2) {
+            d.setDate(d.getDate() + 1);
+            continue;
         }
+
+        const val =
+            d.getFullYear() + '-' +
+            ('0' + (d.getMonth() + 1)).slice(-2) + '-' +
+            ('0' + d.getDate()).slice(-2);
+
+        const text = `${d.getMonth() + 1}/${d.getDate()}(${['日','月','火','水','木','金','土'][d.getDay()]})`;
+
+        const opt = document.createElement('option');
+        opt.value = val;
+        opt.text = text;
+        daySel.appendChild(opt);
+
+        d.setDate(d.getDate() + 1);
+        count++;
+    }
+
+// 時間生成（09:00〜19:00）
+timeSel.innerHTML = '<option value="">時間</option>';
+for(let h = 9; h <= 19; h++) {
+    const t1 = ('0'+h).slice(-2) + ':00';
+    const t2 = ('0'+h).slice(-2) + ':30';
+
+    timeSel.add(new Option(t1, t1));
+
+    // 19:00 には :30 を作らない
+    if (h !== 19) {
+        timeSel.add(new Option(t2, t2));
+    }
+}
+
+    // イベントリスナー
+    const updateHidden = () => {
+        const day = daySel.value;
+        const time = timeSel.value;
+        const hidden = document.getElementById(id);
+        const placeholder = document.getElementById('placeholder' + id.slice(-1));
+        
+        if (day && time) {
+            hidden.value = `${day}T${time}`;
+            if (placeholder) placeholder.style.display = 'none';
+        } else {
+            hidden.value = '';
+        }
+        updateDisplayInfo();
+    };
+
+    daySel.addEventListener('change', updateHidden);
+    timeSel.addEventListener('change', updateHidden);
+}
+
 
         function setPickerValue(id, day, time) {
             const daySel = document.getElementById(id + '_day');
