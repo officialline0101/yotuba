@@ -504,15 +504,22 @@
             </div>
         </div>
 
-        <div class="labelkibounitizi">希望日時<span class="required">必須</span></div>
-        <div class="datetime-wrapper" style="text-align: center;">
-            <span class="placeholder" id="placeholder1">⇩カレンダーの◯をタップするか、下から選択⇩</span>
-            <input type="hidden" id="date1" name="date1">
-            <div class="dt-grid">
-                <select id="date1_day" class="datetime-input" aria-label="日付を選択"></select>
-                <select id="date1_time" class="datetime-input" aria-label="時間"></select>
-            </div>
-        </div>
+<div class="labelkibounitizi">希望日時<span class="required">必須</span></div>
+<div class="datetime-wrapper" style="text-align: center;">
+    <span class="placeholder" id="placeholder1">
+        30分以内の当日予約の場合はお電話にて<br>
+        お問い合わせください⇒
+        <a href="tel:0188936763" style="color: blue; text-decoration: underline;">
+            018-893-6763
+        </a><br>※日・祝のみ17:30が最終受付となっておりますのでご了承ください。
+        <br><br>
+    </span>
+    <input type="hidden" id="date1" name="date1">
+    <div class="dt-grid">
+        <select id="date1_day" class="datetime-input" aria-label="日付を選択"></select>
+        <select id="date1_time" class="datetime-input" aria-label="時間"></select>
+    </div>
+</div>
 
         <div class="labelkibounitizi">第二希望日時<span class="required">必須</span></div>
         <div class="datetime-wrapper" style="text-align: center;">
@@ -520,15 +527,6 @@
             <div class="dt-grid">
                 <select id="date2_day" class="datetime-input" aria-label="日付を選択"></select>
                 <select id="date2_time" class="datetime-input" aria-label="時間"></select>
-            </div>
-        </div>
-
-        <div class="labelkibounitizi">第三希望日時<span class="required">必須</span></div>
-        <div class="datetime-wrapper" style="text-align: center;">
-            <input type="hidden" id="date3" name="date3">
-            <div class="dt-grid">
-                <select id="date3_day" class="datetime-input" aria-label="日付を選択"></select>
-                <select id="date3_time" class="datetime-input" aria-label="時間"></select>
             </div>
         </div>
 
@@ -602,7 +600,7 @@
             restoreInput('physicalConcerns');
 
             // カレンダープルダウン初期化
-            ['date1', 'date2', 'date3'].forEach(id => initPicker(id, 60));
+            ['date1', 'date2'].forEach(id => initPicker(id, 60));
             
             // カレンダー初期非表示
             document.querySelector('.calendar-container').style.display = 'none';
@@ -774,7 +772,6 @@
             // 日時
             const d1 = formatDateTime(document.getElementById('date1').value);
             const d2 = formatDateTime(document.getElementById('date2').value);
-            const d3 = formatDateTime(document.getElementById('date3').value);
 
             const displayDiv = document.getElementById('displayInfo');
             displayDiv.innerHTML = `
@@ -788,7 +785,6 @@
                 <hr>
                 <div class="info-row"><strong>第1希望：</strong><span>${d1}</span></div>
                 <div class="info-row"><strong>第2希望：</strong><span>${d2}</span></div>
-                <div class="info-row"><strong>第3希望：</strong><span>${d3}</span></div>
                 <hr>
                 <div class="info-row" style="display:block;"><strong>お悩み：</strong><br><span style="font-size:0.9em; color:#555;">${concerns || 'なし'}</span></div>
             `;
@@ -833,7 +829,6 @@ ${concerns}
 【希望日時】
 第一：${formatDateTime(d1)}
 第二：${formatDateTime(document.getElementById('date2').value)}
-第三：${formatDateTime(document.getElementById('date3').value)}
 
 《その他メッセージ》
 ${message}`;
@@ -1085,14 +1080,14 @@ function initPicker(id, days) {
         count++;
     }
 
-// 時間生成（09:00〜19:00 を10分刻み）
+// 時間生成（10:00〜18:30 を10分刻み）
 timeSel.innerHTML = '<option value="">時間</option>';
 
-for (let h = 9; h <= 19; h++) {
+for (let h = 10; h <= 18; h++) {
     for (let m = 0; m < 60; m += 10) {
 
-        // 19:00 以降は作らないため、19:10〜19:50 はスキップ
-        if (h === 19 && m > 0) continue;
+        // 18:30 までに制限
+        if (h === 18 && m > 30) continue;
 
         const hh = ('0' + h).slice(-2);
         const mm = ('0' + m).slice(-2);
